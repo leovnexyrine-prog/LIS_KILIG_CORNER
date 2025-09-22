@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🌸 LIS Kilig Corner 🌸</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  body { font-family: sans-serif; text-align: center; padding: 20px; background: #fff0f5; }
+  h1 { color: #d63384; }
+  .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 420px; margin: 20px auto; }
+  input, textarea, button { width: 90%; padding: 10px; margin: 8px 0; border-radius: 12px; border: 1px solid #ccc; }
+  button.main { 
+    background: #ff85b3; 
+    color: white; 
+    border: none; 
+    cursor: pointer; 
+    font-weight: bold; 
+    transition: all 0.3s ease; 
+  }
+  button.main:hover { background: #ff6399; }
+  button.main:active {
+    box-shadow: 0 0 15px #ff85b3, 0 0 30px #ff85b3;
+    transform: scale(0.98);
+  }
+
+  /* 🌸 Flower buttons */
+  .flowers { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 10px 0; }
+  .flower-btn {
+    background: #ffd6e8;
+    border: 2px solid #ff85b3;
+    padding: 10px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+  .flower-btn:hover {
+    background: #ffb3d9;
+    box-shadow: 0 0 12px #ff85b3;
+  }
+  .flower-btn.selected {
+    background: #ff85b3;
+    color: white;
+    box-shadow: 0 0 15px #ff85b3, 0 0 30px #ff85b3;
+  }
+  #qr { margin-top: 15px; }
+</style>
+</head>
+<body>
+<h1>🌸 LIS Kilig Corner 🌸</h1>
+
+<div id="create" class="card">
+  <input id="receiver" placeholder="Recipient's Name 💌">
+  <textarea id="message" placeholder="Your Message ✨"></textarea>
+  
+  <p><strong>Choose a Flower:</strong></p>
+  <div class="flowers">
+    <button class="flower-btn" data-flower="🌷 Tulip">🌷 Tulip</button>
+    <button class="flower-btn" data-flower="🌹 Rose">🌹 Rose</button>
+    <button class="flower-btn" data-flower="🌻 Sunflower">🌻 Sunflower</button>
+    <button class="flower-btn" data-flower="🌼 Daisy">🌼 Daisy</button>
+  </div>
+
+  <button class="main" onclick="makeLink()">💌 Generate Bouquet Link + QR</button>
+  <div id="link"></div>
+  <div id="qr"></div>
+</div>
+
+<div id="view" class="card" style="display:none;">
+  <h2>💌 Bouquet for <span id="viewName"></span></h2>
+  <div style="font-size:3rem" id="viewFlower"></div>
+  <p id="viewMsg"></p>
+</div>
+
+<script>
+let selectedFlower = "";
+
+document.querySelectorAll(".flower-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".flower-btn").forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+    selectedFlower = btn.dataset.flower;
+  });
+});
+
+function makeLink(){
+  const receiver = document.getElementById("receiver").value.trim() || "Recipient";
+  const message = document.getElementById("message").value.trim() || "(No message)";
+  if(!selectedFlower){ alert("Please select a flower 🌸"); return; }
+  
+  const payload = encodeURIComponent(JSON.stringify({receiver, message, flower: selectedFlower}));
+  const url = window.location.origin + window.location.pathname + "?data=" + payload;
+  
+  document.getElementById("link").innerHTML =
+    `<p>Share this link:</p><a href="${url}" target="_blank">${url}</a>`;
+  
+  document.getElementById("qr").innerHTML = "";
+  new QRCode(document.getElementById("qr"), { text: url, width: 220, height: 220 });
+}
+
+// when opening with ?data=..., show bouquet view
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  if(params.has("data")){
+    try {
+      const obj = JSON.parse(decodeURIComponent(params.get("data")));
+      document.getElementById("create").style.display = "none";
+      document.getElementById("view").style.display = "block";
+      document.getElementById("viewName").innerText = obj.receiver;
+      document.getElementById("viewFlower").innerText = obj.flower.split(" ")[0];
+      document.getElementById("viewMsg").innerText = obj.message;
+    } catch(e) { console.error("Invalid bouquet data"); }
+  }
+})();
+</script>
+</body>
+</html>
